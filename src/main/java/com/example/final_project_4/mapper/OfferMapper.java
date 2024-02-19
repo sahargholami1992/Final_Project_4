@@ -8,8 +8,8 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.Collection;
 
-@Mapper
-public interface OffersMapper {
-    OffersMapper INSTANCE = Mappers.getMapper(OffersMapper.class);
-    Collection<OfferResponse> offersToDto(Collection<Offer> offers);
+@Mapper(componentModel = "spring")
+public interface OfferMapper {
+    OfferMapper INSTANCE = Mappers.getMapper(OfferMapper.class);
+    Collection<OfferResponse> offerToDto(Collection<Offer> offers);
 }
