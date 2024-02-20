@@ -11,7 +11,7 @@ import java.util.List;
 public interface ReviewService {
 
 
-    List<ReviewProjection> findByExpertId(Integer expertId);
+    List<ReviewProjection> findByExpert(String email);
 
     Review save(Review review);
 }

@@ -9,11 +9,13 @@ import com.example.final_project_4.entity.Expert;
 import com.example.final_project_4.entity.Offer;
 import com.example.final_project_4.entity.Order;
 import com.example.final_project_4.entity.enumaration.Permissions;
+import com.example.final_project_4.entity.enumaration.StatusOrder;
 import com.example.final_project_4.exceptions.DuplicateException;
 import com.example.final_project_4.exceptions.NotFoundException;
 import com.example.final_project_4.repository.ExpertRepository;
 import com.example.final_project_4.service.*;
 import com.example.final_project_4.service.user.BaseUserServiceImpl;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,8 +31,8 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     protected final ReviewService reviewService;
     protected final CreditService creditService;
     protected final OrderService orderService;
-    public ExpertServiceImpl(ExpertRepository repository, OfferService offerService, ReviewService reviewService, CreditService creditService, OrderService orderService) {
-        super(repository);
+    public ExpertServiceImpl(ExpertRepository repository,BCryptPasswordEncoder passwordEncoder, OfferService offerService, ReviewService reviewService, CreditService creditService, OrderService orderService) {
+        super(repository,passwordEncoder);
         this.offerService=offerService;
         this.reviewService=reviewService;
         this.creditService = creditService;
@@ -43,11 +45,13 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
            throw new DuplicateException("this email existed");
        expert.setProfileImage(readsImage(imagePath));
        expert.setPermissions(Permissions.WAITING);
+       expert.setPassword(passwordEncoder.encode(expert.getPassword()));
        Credit credit = new Credit();
        credit.setBalance(0);
-        Credit saveCredit = creditService.saveCredit(credit);
-        expert.setCredit(saveCredit);
-        return repository.save(expert);
+       Expert save = repository.save(expert);
+       credit.setBaseUser(save);
+       creditService.saveCredit(credit);
+       return save;
     }
     private static byte[] readsImage(String imageName)  {
         InputStream inputStream = ExpertServiceImpl.class.getClassLoader().getResourceAsStream(imageName);
@@ -76,15 +80,15 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     }
     @Transactional
     @Override
-    public Offer sendOffer(OfferDto dto) {
-        return offerService.saveOffer(dto);
+    public Offer sendOffer(OfferDto dto,String email) {
+        return offerService.saveOffer(dto,email);
     }
 
 
 
-    public boolean saveImageToFile(Integer expertId) {
-        if (!existById(expertId))throw new NotFoundException("this expert id is null");
-        Expert expert = findById(expertId);
+    public boolean saveImageToFile(String email) {
+        if (!existByEmail(email))throw new NotFoundException("this expert id is null");
+        Expert expert = findByEmail(email);
         try (OutputStream outputStream = new FileOutputStream("output.jpg")) {
             outputStream.write(expert.getProfileImage());
         } catch (IOException e) {
@@ -94,9 +98,9 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     }
 
     @Override
-    public Collection<Order> getPendingOrdersForExpert(Integer expertId) {
-        if (!existById(expertId))throw new NotFoundException("this expert id is null");
-        Expert expert = findById(expertId);
+    public Collection<Order> getPendingOrdersForExpert(String email) {
+        if (!existByEmail(email))throw new NotFoundException("this expert id is null");
+        Expert expert = findByEmail(email);
         return orderService.getPendingOrdersForExpert(expert);
     }
 
@@ -106,8 +110,15 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     }
 
     @Override
-    public List<ReviewProjection> getReviewsForExpert(Integer expertId) {
-        return reviewService.findByExpertId(expertId);
+    public List<ReviewProjection> getReviewsForExpert(String email) {
+        return reviewService.findByExpert(email);
+    }
+
+    @Override
+    public Collection<Order> historyOrdersForExpert(String email,StatusOrder statusOrder) {
+        if (!existByEmail(email))throw new NotFoundException("this expert id is null");
+        Expert expert = findByEmail(email);
+        return orderService.getOrdersForExpert(expert,statusOrder);
     }
 
 }

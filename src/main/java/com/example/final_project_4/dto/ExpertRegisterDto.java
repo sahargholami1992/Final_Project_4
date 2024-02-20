@@ -17,7 +17,7 @@ public class ExpertRegisterDto extends CustomerRegisterDto {
 
     public ExpertRegisterDto(String firstName, String lastName, String email, String password, String imagePath) {
         super(firstName,lastName,email,password);
-        super.setRoll(Roll.EXPERT) ;
+        super.setRoll(Roll.ROLE_EXPERT) ;
         super.setPermission(Permissions.WAITING);
         this.expertStatus = ExpertStatus.AWAITING_CONFIRMATION;
         this.score = 0;

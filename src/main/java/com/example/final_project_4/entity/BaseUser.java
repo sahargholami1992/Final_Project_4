@@ -1,15 +1,16 @@
 package com.example.final_project_4.entity;
 
 
-
 import com.example.final_project_4.entity.enumaration.Permissions;
 import com.example.final_project_4.entity.enumaration.Roll;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 
 @Getter
@@ -40,30 +41,32 @@ public class BaseUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Permissions permissions;
     private boolean isActive;
+    @OneToOne(mappedBy = "baseUser")
+    private Credit credit;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return List.of(new SimpleGrantedAuthority(roll.name()));
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return email;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.example.final_project_4.dto;
 
 
-
 import com.example.final_project_4.entity.enumaration.Permissions;
 import com.example.final_project_4.entity.enumaration.Roll;
 import jakarta.persistence.Column;
@@ -31,6 +30,7 @@ public class CustomerRegisterDto implements Serializable {
     private LocalDate dateRegister;
     private Roll roll;
     private Permissions permission;
+    private boolean isActive;
 
 
     public CustomerRegisterDto(String firstName, String lastName, String email, String password) {
@@ -39,7 +39,8 @@ public class CustomerRegisterDto implements Serializable {
         this.email = email;
         this.password = password;
         this.dateRegister = LocalDate.now();
-        this.roll = Roll.CUSTOMER;
+        this.roll = Roll.ROLE_CUSTOMER;
         this.permission = Permissions.ACCEPTED;
+        this.isActive = true;
     }
 }

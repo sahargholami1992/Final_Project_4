@@ -6,16 +6,22 @@ package com.example.final_project_4.service.user;
 
 import com.example.final_project_4.dto.UserSearch;
 import com.example.final_project_4.entity.BaseUser;
+import com.example.final_project_4.exceptions.DoesNotMatchField;
 import com.example.final_project_4.exceptions.NoMatchResultException;
 import com.example.final_project_4.exceptions.NotFoundException;
 import com.example.final_project_4.repository.user.BaseUserRepository;
+import com.example.final_project_4.service.CreditService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -24,13 +30,20 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
         implements BaseUserService<T> {
 
     protected final R repository;
+    protected final BCryptPasswordEncoder passwordEncoder;
+
+
 
     @Transactional
     @Override
-    public T changePassword(String email, String newPassword) {
+    public T changePassword(String email, String newPassword,String confirmPassword) {
         T user = repository.findByEmail(email).
                 orElseThrow(() -> new NoMatchResultException("userName or password is wrong"));
-        user.setPassword(newPassword);
+        if (!Objects.equals(newPassword, confirmPassword))
+            throw new NoMatchResultException("password not match");
+        user.setPassword(passwordEncoder.encode(
+                newPassword
+        ));
         return repository.save(user);
     }
 
@@ -43,6 +56,11 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
     public T findByEmail(String email) {
         return repository.findByEmail(email).
                 orElseThrow(() -> new NotFoundException("this user not found"));
+    }
+    @Override
+    public Optional<T> findByUsernameOptional(String email) {
+        return repository.findByEmail(email);
+
     }
 
     @Override
@@ -87,6 +105,7 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
                     query.orderBy(cb.desc(root.get("score")));
                 }
 
+
                 return predicate;
             };
         }
@@ -101,6 +120,13 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
         return repository.existsById(id);
     }
 
+//    @Override
+//    public double showCreditBalance(String email){
+//        T t = findByEmail(email);
+//        return t.getCredit().getBalance();
+//
+//    }
+
 }
 
 
@@ -112,139 +138,4 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
 
 
 
-//        repository.findAll((root, query, criteriaBuilder) -> {
-//            addFirstNamePredicate(predicates, root, criteriaBuilder, searchCriteria.getName());
-//            addEmailPredicate(predicates, root, criteriaBuilder, searchCriteria.getEmail());
-//            addACDExpertScorePredicate(predicates, root, criteriaBuilder, searchCriteria.getMinRating());
-//            expertiseFieldPredicate(predicates, root, criteriaBuilder, searchCriteria.getExpertiseField());
-//            addRollPredicate(predicates, root, criteriaBuilder, searchCriteria.getRole());
-//            query.where(predicates.toArray(new Predicate[0]));
-//
-//
-//            return criteriaBuilder.createQuery(query)
-//        });
-//
-//    }
-//    public abstract Class<T> getEntityClass();
-//    public List<Customer> search(CustomerSearch search) {
-//
-////        select c from Customer c
-//
-//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-//
-//        CriteriaQuery<Customer> query = criteriaBuilder.createQuery(
-//                getEntityClass()
-//        );
-//
-//        Root<Customer> customerRoot = query.from(getEntityClass());
-//
-//        List<Predicate> predicates = new ArrayList<>();
-//
-//        addFirstNamePredicate(predicates, customerRoot, criteriaBuilder, search.getFirstName());
-//        addEmailPredicate(predicates, customerRoot, criteriaBuilder, search.getLastName());
-//        addMobileNumberPredicate(predicates, customerRoot, criteriaBuilder, search.getMobileNumber());
-//        addCreateDatePredicate(predicates, customerRoot, criteriaBuilder, search.getFromDate(), search.getToDate());
-//        addIsActivePredicate(predicates, customerRoot, criteriaBuilder, search.getIsActive());
-//        addCodePredicate(predicates, customerRoot, criteriaBuilder, search.getCode());
-//
-//        if (predicates.size() > 0) {
-//            query.where(
-//                    predicates.toArray(
-//                            new Predicate[0]
-//                    )
-//            );
-//        }
-//
-//        return entityManager.createQuery(
-//                query
-//        ).getResultList();
-//    }
-//
-//    private void addFirstNamePredicate(List<Predicate> predicates, Root<T> root,
-//                                       CriteriaBuilder criteriaBuilder, String firstName) {
-//        if (StringUtils.isNotBlank(firstName)) {
-////            c.firstName like '%:firstName%'
-//            predicates.add(
-//                    criteriaBuilder.like(
-//                            root.get("firstName"),
-//                            "%" + firstName + "%"
-//                    )
-//            );
-//        }
-//    }
-//
-//    private void addEmailPredicate(List<Predicate> predicates, Root<T> root,
-//                                      CriteriaBuilder criteriaBuilder, String email) {
-//        if (StringUtils.isNotBlank(email)) {
-////            c.lastName like '%:lastName%'
-//            predicates.add(
-//                    criteriaBuilder.like(
-//                            root.get("email"),
-//                            "%" + email + "%"
-//                    )
-//            );
-//        }
-//    }
-//
-//    private void addACDExpertScorePredicate(List<Predicate> predicates, Root<T> root,
-//                                          CriteriaBuilder criteriaBuilder, int score) {
-//        if (score != 0) {
-////            c.mobileNumber like '%:mobileNumber%'
-//            predicates.add(
-//                    criteriaBuilder.greaterThanOrEqualTo(root.get("score"),score)
-//            );
-//        }
-//    }
-//
-////    private void addCreateDatePredicate(List<Predicate> predicates, Root<Customer> root,
-////                                        CriteriaBuilder criteriaBuilder, ZonedDateTime fromDate,
-////                                        ZonedDateTime toDate) {
-////
-////        /*predicates.add(
-////                criteriaBuilder.between(
-////                        root.get("createDate"), fromDate, toDate
-////                )
-////        );*/
-////
-////        if (fromDate != null) {
-////            predicates.add(
-////                    criteriaBuilder.greaterThanOrEqualTo(
-////                            root.get("createDate"),
-////                            fromDate
-////                    )
-////            );
-////        }
-////        if (toDate != null) {
-////            predicates.add(
-////                    criteriaBuilder.lessThanOrEqualTo(
-////                            root.get("createDate"),
-////                            toDate
-////                    )
-////            );
-////        }
-////    }
-//
-//    private void addRollPredicate(List<Predicate> predicates, Root<T> root,
-//                                      CriteriaBuilder criteriaBuilder, Roll roll) {
-//        if (roll != null) {
-//            predicates.add(
-//                    criteriaBuilder.equal(root.get("roll"),roll)
-//
-//
-//            );
-//        }
-//    }
-//
-//    private void expertiseFieldPredicate(List<Predicate> predicates, Root<T> root,
-//                                  CriteriaBuilder criteriaBuilder, String expertiseField) {
-//        if (StringUtils.isNotBlank(expertiseField)) {
-////            c.code like '%:code%'
-//            predicates.add(
-//                    criteriaBuilder.like(
-//                            root.get("expertiseField"),
-//                            "%" + expertiseField + "%"
-//                    )
-//            );
-//        }
-//    }
 

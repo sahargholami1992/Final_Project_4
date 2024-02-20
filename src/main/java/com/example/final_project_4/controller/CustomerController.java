@@ -4,16 +4,18 @@ package com.example.final_project_4.controller;
 import com.example.final_project_4.dto.*;
 import com.example.final_project_4.entity.*;
 import com.example.final_project_4.entity.enumaration.StatusOrder;
-import com.example.final_project_4.mapper.CustomersMapper;
-import com.example.final_project_4.mapper.OffersMapper;
-import com.example.final_project_4.mapper.OrderMapper;
-import com.example.final_project_4.mapper.SubServiceMapper;
+
+import com.example.final_project_4.mapper.CustomerMapper;
+import com.example.final_project_4.mapper.OfferMapper;
+import com.example.final_project_4.mapper.OrdersMapper;
+import com.example.final_project_4.mapper.SubServicesMapper;
 import com.example.final_project_4.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,20 +41,13 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<CustomerResponse> register(@RequestBody @Valid CustomerRegisterDto dto){
-        Customer customer = CustomersMapper.INSTANCE.convertToEntity(dto);
+        Customer customer = CustomerMapper.INSTANCE.convertsToEntity(dto);
         Customer registerCustomer = customerService.registerCustomer(customer);
         return ResponseEntity.ok(
-                CustomersMapper.INSTANCE.convertToDto(registerCustomer)
+                CustomerMapper.INSTANCE.convertsToDto(registerCustomer)
         );
     }
-    @PreAuthorize("hasRole('CUSTOMER')")
-    @PutMapping("changePassword")
-    public ResponseEntity<CustomerResponse> changePassword(@RequestBody @Valid ChangePasswordDto dto){
-        Customer customer = customerService.changePassword(dto.getEmail(), dto.getPassword());
-        return ResponseEntity.ok(
-                CustomersMapper.INSTANCE.convertToDto(customer)
-        );
-    }
+
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/showAllBasicService")
     public ResponseEntity<Collection<BasicService>> showAllBasicService(){
@@ -63,15 +58,16 @@ public class CustomerController {
     public ResponseEntity<Collection<SubServiceResponse>> showAllSubServiceByService(@RequestParam String basicServiceName){
         Collection<SubService> subServices = customerService.showAllSubServiceByService(basicServiceName);
         return ResponseEntity.ok(
-                SubServiceMapper.INSTANCE.convertCollectionsToDto(subServices)
+                SubServicesMapper.INSTANCE.convertCollectionToDto(subServices)
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/addOrder")
     public ResponseEntity<OrderResponse> addOrder(@RequestBody OrderDto dto){
-        Order order = customerService.addOrder(dto);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Order order = customerService.addOrder(dto,email);
         return ResponseEntity.ok(
-                OrderMapper.INSTANCE.convertToResponse(order)
+                OrdersMapper.INSTANCE.convertsToResponse(order)
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -81,25 +77,34 @@ public class CustomerController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
     @PreAuthorize("hasRole('CUSTOMER')")
-    @PutMapping("/changeOrderStatus")
-    public ResponseEntity<Void> changeOrderStatus(@RequestParam Integer offerId,@RequestParam StatusOrder statusOrder){
-        customerService.changeOrderStatus(offerId,statusOrder);
+    @PutMapping("/changeOrderStatusToComingExpert")
+    public ResponseEntity<Void> changeOrderStatusToComingExpert(@RequestParam Integer offerId){
+        customerService.changeOrderStatusToComingExpert(offerId);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @PutMapping("/changeOrderStatusToDone")
+    public ResponseEntity<Void> changeOrderStatusToDone(@RequestParam Integer offerId){
+        customerService.changeOrderStatusToDone(offerId);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/getOffersForOrder")
-    public ResponseEntity<Collection<OfferResponse>> getOffersForOrder(@RequestParam Integer customerId, @RequestParam String sortBy) {
-        Collection<Offer> offers = customerService.getOffersForOrder(customerId,sortBy);
+    public ResponseEntity<Collection<OfferResponse>> getOffersForOrder(@RequestParam String sortBy) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Collection<Offer> offers = customerService.getOffersForOrder(email,sortBy);
         return ResponseEntity.ok(
-                OffersMapper.INSTANCE.offersToDto(offers)
+                OfferMapper.INSTANCE.offerToDto(offers)
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/findAllByOrder")
-    public ResponseEntity<Collection<OfferResponse>> findAllByOrder(@RequestParam Integer customerId){
-        Collection<Offer> offers = customerService.findAllByOrder(customerId);
+    public ResponseEntity<Collection<OfferResponse>> findAllByOrder(){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Collection<Offer> offers = customerService.findAllByOrder(email);
         return ResponseEntity.ok(
-                OffersMapper.INSTANCE.offersToDto(offers)
+                OfferMapper.INSTANCE.offerToDto(offers)
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -115,5 +120,13 @@ public class CustomerController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
-
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @GetMapping("/historyOrdersForCustomer")
+    public ResponseEntity<Collection<OrderResponse>> historyOrdersForCustomer(@RequestParam StatusOrder statusOrder){
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Collection<Order> orders = customerService.historyOrdersForCustomer(email,statusOrder);
+        return ResponseEntity.ok(
+                OrdersMapper.INSTANCE.convertToCollectionsDto(orders)
+        );
+    }
 }

@@ -13,6 +13,6 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review,Integer> {
-    @Query(value = "select new com.example.final_project_4.dto.ReviewProjection(r.score) from Review r where r.expert.id = :expert_id")
-    List<ReviewProjection> findScoreByExpertId(Integer expert_id);
+    @Query(value = "select new com.example.final_project_4.dto.ReviewProjection(r.score) from Review r where r.expert.email = :email")
+    List<ReviewProjection> findScoreByExpert(String email);
 }

@@ -9,13 +9,10 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @ToString
 @Entity
 public class Customer extends BaseUser {
-    @OneToOne
-    private Credit credit;
+
 
 
 }

@@ -44,6 +44,7 @@ public class SubService implements Serializable {
     public String toString() {
         return "SubService{" +
                 "id=" + id +
+                ", basicService" + basicService +
                 ", subServiceName='" + subServiceName + '\'' +
                 ", basePrice=" + basePrice +
                 ", description='" + description + '\'' +

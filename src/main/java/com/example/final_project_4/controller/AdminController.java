@@ -3,13 +3,13 @@ package com.example.final_project_4.controller;
 
 
 import com.example.final_project_4.dto.*;
-import com.example.final_project_4.entity.BaseUser;
-import com.example.final_project_4.entity.BasicService;
-import com.example.final_project_4.entity.Expert;
-import com.example.final_project_4.entity.SubService;
-import com.example.final_project_4.mapper.ExpertsMapper;
-import com.example.final_project_4.mapper.SubServiceMapper;
-import com.example.final_project_4.mapper.UserMapper;
+import com.example.final_project_4.entity.*;
+
+
+import com.example.final_project_4.mapper.ExpertMapper;
+import com.example.final_project_4.mapper.OrdersMapper;
+import com.example.final_project_4.mapper.SubServicesMapper;
+import com.example.final_project_4.mapper.UsersMapper;
 import com.example.final_project_4.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +62,7 @@ public class AdminController {
     public ResponseEntity<Collection<SubServiceResponse>> showAllSubService(){
         Collection<SubService> subServices = adminService.ShowAllSubService();
         return ResponseEntity.ok(
-                SubServiceMapper.INSTANCE.convertCollectionsToDto(subServices)
+                SubServicesMapper.INSTANCE.convertCollectionToDto(subServices)
         );
     }
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,7 +74,7 @@ public class AdminController {
     @GetMapping("/showAllExpert")
     public ResponseEntity<Collection<ExpertResponseDto>> showAllExpert(){
         Collection<Expert> experts = adminService.showAllExpert();
-        Collection<ExpertResponseDto> expertResponseDto = ExpertsMapper.INSTANCE.convertToDto(experts);
+        Collection<ExpertResponseDto> expertResponseDto = ExpertMapper.INSTANCE.convertsToDto(experts);
         return ResponseEntity.ok(
                 expertResponseDto
         );
@@ -105,7 +105,32 @@ public class AdminController {
     public ResponseEntity<List<SearchUserResponse>> search(@RequestBody UserSearch dto){
         List<BaseUser> users = adminService.search(dto);
         return ResponseEntity.ok(
-                UserMapper.INSTANCE.convertToDto(users)
+                UsersMapper.INSTANCE.convertsToDto(users)
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/subServiceHistory")
+    public ResponseEntity<Collection<SubService>> subServiceHistory(@RequestParam String email){
+        return ResponseEntity.ok(
+                adminService.subServiceHistory(email)
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reported")
+    public ResponseEntity<ReportForAdmin> reported(@RequestParam String email){
+        return ResponseEntity.ok(
+                adminService.reported(email)
+        );
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/getFilteredOrderHistory")
+    public ResponseEntity<List<OrderResponse>> getFilteredOrderHistory(OrderHistoryDto dto){
+        List<Order> orderHistory = adminService.getFilteredOrderHistory(dto);
+        return ResponseEntity.ok(
+                OrdersMapper.INSTANCE.convertsToListDto(orderHistory)
         );
     }
 

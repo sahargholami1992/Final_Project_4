@@ -37,17 +37,17 @@ public class OfferServiceImpl implements OfferService {
 
     @Transactional
     @Override
-    public Offer saveOffer(OfferDto dto) {
+    public Offer saveOffer(OfferDto dto,String email) {
         if (!orderService.existById(dto.getOrderId())
-                && !expertService.existById(dto.getExpertId()))
+                && !expertService.existByEmail(email))
             throw new NotFoundException("order or expert not found");
         Order order = orderService.findById(dto.getOrderId());
-        Expert expert = expertService.findById(dto.getExpertId());
+        Expert expert = expertService.findByEmail(email);
         if (!order.getStatusOrder().equals(StatusOrder.WAITING_FOR_THE_SUGGESTION_OF_EXPERTS)
                 && !order.getStatusOrder().equals(StatusOrder.WAITING_FOR_EXPERT_SELECTION))
             throw new NoMatchResultException("Cannot send proposal for orders in the current status");
         if (dto.getRecommendedPrice() < order.getSubService().getBasePrice()
-                && dto.getSuggestedTimeToStartWork().isBefore(LocalDate.now()))
+                || dto.getSuggestedTimeToStartWork().isBefore(LocalDate.now()))
             throw new NoMatchResultException("Invalid proposal conditions ");
         Offer offer = getOffer(dto, order, expert);
         Offer save = repository.save(offer);

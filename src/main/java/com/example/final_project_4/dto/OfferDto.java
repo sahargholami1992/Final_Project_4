@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 public class OfferDto implements Serializable {
-    private Integer expertId;
+//    private Integer expertId;
     private Integer orderId;
     private int DurationOfWork;
     private LocalDate SuggestedTimeToStartWork;

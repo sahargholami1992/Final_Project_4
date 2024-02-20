@@ -2,7 +2,7 @@ package com.example.final_project_4.config;
 
 
 
-import com.example.final_project_4.repository.UserRepository;
+import com.example.final_project_4.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Bean
@@ -33,7 +33,7 @@ public class SecurityConfiguration {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(a -> a
 //                        .requestMatchers("admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
+//                        .requestMatchers("/customer/**").hasRole("CUSTOMER")
 //                        .requestMatchers("/expert/**").hasRole("EXPERT")
                         .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults());
@@ -44,9 +44,9 @@ public class SecurityConfiguration {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth)
             throws Exception {
-        auth.userDetailsService((email) -> userRepository
-                        .findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException(String.format("This %s notFound!", email))))
+        auth.userDetailsService((username) -> userService
+                        .findByUsernameOptional(username)
+                        .orElseThrow(() -> new UsernameNotFoundException(String.format("This %s notFound!", username))))
                 .passwordEncoder(passwordEncoder);
     }
 }

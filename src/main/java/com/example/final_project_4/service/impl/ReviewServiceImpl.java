@@ -20,8 +20,8 @@ public class ReviewServiceImpl implements ReviewService {
     protected final ReviewRepository repository;
 
     @Override
-    public List<ReviewProjection> findByExpertId(Integer expertId) {
-        return repository.findScoreByExpertId(expertId);
+    public List<ReviewProjection> findByExpert(String email) {
+        return repository.findScoreByExpert(email);
     }
 
     @Transactional

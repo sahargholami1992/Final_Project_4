@@ -3,6 +3,8 @@ package com.example.final_project_4.service.impl;
 
 
 
+import com.example.final_project_4.dto.OrderHistoryDto;
+import com.example.final_project_4.dto.ReportForAdmin;
 import com.example.final_project_4.dto.UserSearch;
 import com.example.final_project_4.entity.*;
 import com.example.final_project_4.entity.enumaration.ExpertStatus;
@@ -10,12 +12,13 @@ import com.example.final_project_4.entity.enumaration.Permissions;
 import com.example.final_project_4.entity.enumaration.Roll;
 import com.example.final_project_4.exceptions.DoesNotMatchField;
 import com.example.final_project_4.exceptions.DuplicateException;
+import com.example.final_project_4.exceptions.NoMatchResultException;
 import com.example.final_project_4.exceptions.NotFoundException;
 import com.example.final_project_4.repository.AdminRepository;
 import com.example.final_project_4.service.*;
 import com.example.final_project_4.service.user.BaseUserServiceImpl;
 import jakarta.annotation.PostConstruct;
-import jakarta.validation.Validator;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,16 +36,19 @@ public class AdminServiceImpl extends BaseUserServiceImpl<Admin, AdminRepository
     protected final ExpertService expertService;
     protected final CustomerService customerService;
     protected final UserService userService;
-    private final Validator validator;
+    protected final OrderService orderService;
+    protected final CreditService creditService;
 
-    public AdminServiceImpl(AdminRepository repository, SubServiceService subServiceService, BasicServiceService basicServiceService, ExpertService expertService, CustomerService customerService, UserService userService, Validator validator) {
-        super(repository);
+
+    public AdminServiceImpl(AdminRepository repository,BCryptPasswordEncoder passwordEncoder, SubServiceService subServiceService, BasicServiceService basicServiceService, ExpertService expertService, CustomerService customerService, UserService userService, OrderService orderService, CreditService creditService) {
+        super(repository,passwordEncoder);
         this.subServiceService = subServiceService;
         this.basicServiceService = basicServiceService;
         this.expertService = expertService;
         this.customerService = customerService;
         this.userService = userService;
-        this.validator = validator;
+        this.orderService = orderService;
+        this.creditService = creditService;
     }
 
     @PostConstruct
@@ -53,11 +59,16 @@ public class AdminServiceImpl extends BaseUserServiceImpl<Admin, AdminRepository
             admin.setFirstName("admin");
             admin.setLastName("Admin");
             admin.setEmail("Admin@admin.com");
-            admin.setPassword("Admin123");
+            admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setDateRegister(LocalDate.now());
             admin.setPermissions(Permissions.ACCEPTED);
-            admin.setRoll(Roll.ADMIN);
-            repository.save(admin);
+            admin.setRoll(Roll.ROLE_ADMIN);
+            admin.setActive(true);
+            Credit credit = new Credit();
+            credit.setBalance(0);
+            Admin save = repository.save(admin);
+            credit.setBaseUser(save);
+            creditService.saveCredit(credit);
         }
     }
 
@@ -110,7 +121,6 @@ public class AdminServiceImpl extends BaseUserServiceImpl<Admin, AdminRepository
     @Override
     public Collection<SubService> ShowAllSubService() {
         return subServiceService.loadAll();
-
     }
 
     @Override
@@ -143,11 +153,32 @@ public class AdminServiceImpl extends BaseUserServiceImpl<Admin, AdminRepository
         subServiceService.editSubService(subServiceName, price, description);
     }
 
-
-
-
     @Override
     public List<BaseUser> search(UserSearch search) {
         return userService.searchUsers(search);
+    }
+
+    @Override
+    public Collection<SubService> subServiceHistory(String email) {
+        return subServiceService.subServiceHistory(email);
+    }
+    @Override
+    public ReportForAdmin reported(String email) {
+        if (email.equals("Admin@admin.com"))
+            throw new NoMatchResultException("FOR THIS EMAIL NOT FOUND REPORT");
+        BaseUser user = userService.findByEmail(email);
+        ReportForAdmin report = new ReportForAdmin();
+        report.setDateRegister(user.getDateRegister());
+        if (user.getRoll().equals(Roll.ROLE_EXPERT)) {
+            report.setOrdersPlaced(orderService.numberOfOrders(email));
+        }else {
+            report.setOrdersRequest(orderService.numberOfOrders(email));
+        }
+        return report;
+    }
+
+    @Override
+    public List<Order> getFilteredOrderHistory(OrderHistoryDto dto) {
+        return orderService.getFilteredOrderHistory(dto);
     }
 }

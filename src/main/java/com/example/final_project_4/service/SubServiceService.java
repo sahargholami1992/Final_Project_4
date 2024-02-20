@@ -7,6 +7,8 @@ package com.example.final_project_4.service;
 import com.example.final_project_4.entity.BasicService;
 import com.example.final_project_4.entity.Expert;
 import com.example.final_project_4.entity.SubService;
+import com.example.final_project_4.entity.enumaration.Roll;
+import com.example.final_project_4.entity.enumaration.StatusOrder;
 
 import java.util.Collection;
 
@@ -25,4 +27,5 @@ public interface SubServiceService{
     Collection<SubService> loadAll();
     SubService findBySubServiceName(String subServiceName);
 
+    Collection<SubService> subServiceHistory(String email);
 }

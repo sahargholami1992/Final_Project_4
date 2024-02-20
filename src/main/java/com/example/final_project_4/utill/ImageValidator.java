@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.io.IOException;
 
-public class ImageValidator implements ConstraintValidator<com.example.final_project_3.utill.ValidImage, byte[]> {
+public class ImageValidator implements ConstraintValidator<ValidImage, byte[]> {
 
 
 
