@@ -5,13 +5,11 @@ import com.example.final_project_4.dto.*;
 import com.example.final_project_4.entity.*;
 import com.example.final_project_4.entity.enumaration.StatusOrder;
 
-import com.example.final_project_4.mapper.CustomerMapper;
-import com.example.final_project_4.mapper.OfferMapper;
-import com.example.final_project_4.mapper.OrdersMapper;
-import com.example.final_project_4.mapper.SubServicesMapper;
+
 import com.example.final_project_4.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +18,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
+
 
 
 @RestController
@@ -30,6 +30,7 @@ import java.util.Collection;
 @Validated
 public class CustomerController {
     private final CustomerService customerService;
+    private final ModelMapper modelMapper;
 
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -41,10 +42,10 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<CustomerResponse> register(@RequestBody @Valid CustomerRegisterDto dto){
-        Customer customer = CustomerMapper.INSTANCE.convertsToEntity(dto);
+        Customer customer = modelMapper.map(dto, Customer.class);
         Customer registerCustomer = customerService.registerCustomer(customer);
         return ResponseEntity.ok(
-                CustomerMapper.INSTANCE.convertsToDto(registerCustomer)
+                modelMapper.map(registerCustomer,CustomerResponse.class)
         );
     }
 
@@ -57,8 +58,13 @@ public class CustomerController {
     @GetMapping("/showAllSubServiceByService")
     public ResponseEntity<Collection<SubServiceResponse>> showAllSubServiceByService(@RequestParam String basicServiceName){
         Collection<SubService> subServices = customerService.showAllSubServiceByService(basicServiceName);
+        Collection<SubServiceResponse> responses = new ArrayList<>();
+        for (SubService subService: subServices) {
+            SubServiceResponse response = modelMapper.map(subService, SubServiceResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                SubServicesMapper.INSTANCE.convertCollectionToDto(subServices)
+               responses
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -67,7 +73,7 @@ public class CustomerController {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Order order = customerService.addOrder(dto,email);
         return ResponseEntity.ok(
-                OrdersMapper.INSTANCE.convertsToResponse(order)
+                modelMapper.map(order,OrderResponse.class)
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -89,22 +95,34 @@ public class CustomerController {
         customerService.changeOrderStatusToDone(offerId);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
+
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/getOffersForOrder")
     public ResponseEntity<Collection<OfferResponse>> getOffersForOrder(@RequestParam String sortBy) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Collection<Offer> offers = customerService.getOffersForOrder(email,sortBy);
+        Collection<OfferResponse> responses = new ArrayList<>();
+        for (Offer offer:offers) {
+            OfferResponse response = modelMapper.map(offer, OfferResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                OfferMapper.INSTANCE.offerToDto(offers)
+                responses
         );
     }
+
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/findAllByOrder")
     public ResponseEntity<Collection<OfferResponse>> findAllByOrder(){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Collection<Offer> offers = customerService.findAllByOrder(email);
+        Collection<OfferResponse> responses = new ArrayList<>();
+        for (Offer offer:offers) {
+            OfferResponse response = modelMapper.map(offer, OfferResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                OfferMapper.INSTANCE.offerToDto(offers)
+                responses
         );
     }
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -125,8 +143,13 @@ public class CustomerController {
     public ResponseEntity<Collection<OrderResponse>> historyOrdersForCustomer(@RequestParam StatusOrder statusOrder){
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Collection<Order> orders = customerService.historyOrdersForCustomer(email,statusOrder);
+        Collection<OrderResponse> responses = new ArrayList<>();
+        for (Order order:orders) {
+            OrderResponse response = modelMapper.map(order, OrderResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                OrdersMapper.INSTANCE.convertToCollectionsDto(orders)
+                responses
         );
     }
 }

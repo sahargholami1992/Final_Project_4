@@ -27,5 +27,7 @@ public interface BaseUserService<T extends BaseUser>  {
 
 
     boolean existById(Integer id);
-//    double showCreditBalance(String email);
+
+    void save(T user);
+    void sendEmail(T user);
 }

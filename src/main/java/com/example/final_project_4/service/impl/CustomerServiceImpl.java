@@ -12,6 +12,7 @@ import com.example.final_project_4.exceptions.DoesNotMatchField;
 import com.example.final_project_4.exceptions.DuplicateException;
 import com.example.final_project_4.exceptions.InsufficientCreditException;
 import com.example.final_project_4.exceptions.NotFoundException;
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.repository.CustomerRepository;
 import com.example.final_project_4.service.*;
 import com.example.final_project_4.service.user.BaseUserServiceImpl;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -35,8 +35,8 @@ public class CustomerServiceImpl extends BaseUserServiceImpl<Customer, CustomerR
     protected final CreditService creditService;
     protected final ReviewService reviewService;
     protected final ExpertService expertService;
-    public CustomerServiceImpl(CustomerRepository repository, BCryptPasswordEncoder passwordEncoder, SubServiceService subServiceService, BasicServiceService basicServiceService, OrderService orderService, OfferService offerService, CreditService creditService, ReviewService reviewService, ExpertService expertService) {
-        super(repository,passwordEncoder);
+    public CustomerServiceImpl(CustomerRepository repository, BCryptPasswordEncoder passwordEncoder, ConfirmationTokenRepository confirmationTokenRepository, EmailService emailService, SubServiceService subServiceService, BasicServiceService basicServiceService, OrderService orderService, OfferService offerService, CreditService creditService, ReviewService reviewService, ExpertService expertService) {
+        super(repository,passwordEncoder,confirmationTokenRepository,emailService);
         this.subServiceService  =subServiceService;
         this.basicServiceService = basicServiceService;
         this.orderService=orderService;
@@ -57,6 +57,7 @@ public class CustomerServiceImpl extends BaseUserServiceImpl<Customer, CustomerR
         Customer save = repository.save(customer);
         credit.setBaseUser(save);
         creditService.saveCredit(credit);
+        sendEmail(save);
         return save;
     }
 

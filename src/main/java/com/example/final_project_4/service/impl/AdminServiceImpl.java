@@ -15,6 +15,7 @@ import com.example.final_project_4.exceptions.DuplicateException;
 import com.example.final_project_4.exceptions.NoMatchResultException;
 import com.example.final_project_4.exceptions.NotFoundException;
 import com.example.final_project_4.repository.AdminRepository;
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.service.*;
 import com.example.final_project_4.service.user.BaseUserServiceImpl;
 import jakarta.annotation.PostConstruct;
@@ -40,8 +41,8 @@ public class AdminServiceImpl extends BaseUserServiceImpl<Admin, AdminRepository
     protected final CreditService creditService;
 
 
-    public AdminServiceImpl(AdminRepository repository,BCryptPasswordEncoder passwordEncoder, SubServiceService subServiceService, BasicServiceService basicServiceService, ExpertService expertService, CustomerService customerService, UserService userService, OrderService orderService, CreditService creditService) {
-        super(repository,passwordEncoder);
+    public AdminServiceImpl(AdminRepository repository, BCryptPasswordEncoder passwordEncoder, ConfirmationTokenRepository confirmationTokenRepository, EmailService emailService, SubServiceService subServiceService, BasicServiceService basicServiceService, ExpertService expertService, CustomerService customerService, UserService userService, OrderService orderService, CreditService creditService) {
+        super(repository,passwordEncoder,confirmationTokenRepository,emailService);
         this.subServiceService = subServiceService;
         this.basicServiceService = basicServiceService;
         this.expertService = expertService;

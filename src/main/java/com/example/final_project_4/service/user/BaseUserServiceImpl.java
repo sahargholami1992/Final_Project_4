@@ -6,15 +6,16 @@ package com.example.final_project_4.service.user;
 
 import com.example.final_project_4.dto.UserSearch;
 import com.example.final_project_4.entity.BaseUser;
-import com.example.final_project_4.exceptions.DoesNotMatchField;
+import com.example.final_project_4.entity.ConfirmationToken;
 import com.example.final_project_4.exceptions.NoMatchResultException;
 import com.example.final_project_4.exceptions.NotFoundException;
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.repository.user.BaseUserRepository;
-import com.example.final_project_4.service.CreditService;
+import com.example.final_project_4.service.impl.EmailService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,8 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
 
     protected final R repository;
     protected final BCryptPasswordEncoder passwordEncoder;
+    protected final ConfirmationTokenRepository confirmationTokenRepository;
+    protected final EmailService emailService;
 
 
 
@@ -119,6 +122,10 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
     public boolean existById(Integer id){
         return repository.existsById(id);
     }
+    @Override
+    public void save(T user){
+        repository.save(user);
+    }
 
 //    @Override
 //    public double showCreditBalance(String email){
@@ -126,6 +133,19 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
 //        return t.getCredit().getBalance();
 //
 //    }
+    @Override
+    public void sendEmail(T user) {
+    ConfirmationToken confirmationToken = new ConfirmationToken(user);
+    confirmationTokenRepository.save(confirmationToken);
+    SimpleMailMessage mailMessage = new SimpleMailMessage();
+    mailMessage.setFrom("siavosh.arminrad@gmail.com");
+    mailMessage.setTo(user.getEmail());
+    mailMessage.setSubject("Complete Registration!");
+    mailMessage.setText("To confirm your account, please click here : "
+            +"http://localhost:8080/confirm-account?token="+confirmationToken.getConfirmationToken());
+
+    emailService.sendEmail(mailMessage);
+}
 
 }
 

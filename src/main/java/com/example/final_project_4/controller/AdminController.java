@@ -6,19 +6,18 @@ import com.example.final_project_4.dto.*;
 import com.example.final_project_4.entity.*;
 
 
-import com.example.final_project_4.mapper.ExpertMapper;
-import com.example.final_project_4.mapper.OrdersMapper;
-import com.example.final_project_4.mapper.SubServicesMapper;
-import com.example.final_project_4.mapper.UsersMapper;
+
 import com.example.final_project_4.service.AdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,6 +27,7 @@ import java.util.List;
 @Validated
 public class AdminController {
     protected final AdminService adminService;
+    protected final ModelMapper modelMapper;
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/saveBasicService")
     public ResponseEntity<Void> saveBasicService(@RequestBody @Valid AddBasicServiceDto dto){
@@ -61,8 +61,13 @@ public class AdminController {
     @GetMapping("/showAllSubService")
     public ResponseEntity<Collection<SubServiceResponse>> showAllSubService(){
         Collection<SubService> subServices = adminService.ShowAllSubService();
+        Collection<SubServiceResponse> responses = new ArrayList<>();
+        for (SubService subService:subServices) {
+            SubServiceResponse response = modelMapper.map(subService, SubServiceResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                SubServicesMapper.INSTANCE.convertCollectionToDto(subServices)
+                responses
         );
     }
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,9 +79,13 @@ public class AdminController {
     @GetMapping("/showAllExpert")
     public ResponseEntity<Collection<ExpertResponseDto>> showAllExpert(){
         Collection<Expert> experts = adminService.showAllExpert();
-        Collection<ExpertResponseDto> expertResponseDto = ExpertMapper.INSTANCE.convertsToDto(experts);
+        Collection<ExpertResponseDto> responses = new ArrayList<>();
+        for (Expert expert:experts) {
+            ExpertResponseDto response = modelMapper.map(expert, ExpertResponseDto.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                expertResponseDto
+                responses
         );
     }
     @PreAuthorize("hasRole('ADMIN')")
@@ -100,12 +109,18 @@ public class AdminController {
         adminService.editSubService(dto.getSubServiceName(), dto.getPrice(),dto.getDescription());
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/search")
     public ResponseEntity<List<SearchUserResponse>> search(@RequestBody UserSearch dto){
         List<BaseUser> users = adminService.search(dto);
+        List<SearchUserResponse> responses = new ArrayList<>();
+        for (BaseUser user:users) {
+            SearchUserResponse response = modelMapper.map(user, SearchUserResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                UsersMapper.INSTANCE.convertsToDto(users)
+                responses
         );
     }
 
@@ -129,8 +144,13 @@ public class AdminController {
     @PostMapping("/getFilteredOrderHistory")
     public ResponseEntity<List<OrderResponse>> getFilteredOrderHistory(OrderHistoryDto dto){
         List<Order> orderHistory = adminService.getFilteredOrderHistory(dto);
+        List<OrderResponse> responses = new ArrayList<>();
+        for (Order order:orderHistory) {
+            OrderResponse response = modelMapper.map(order, OrderResponse.class);
+            responses.add(response);
+        }
         return ResponseEntity.ok(
-                OrdersMapper.INSTANCE.convertsToListDto(orderHistory)
+                responses
         );
     }
 

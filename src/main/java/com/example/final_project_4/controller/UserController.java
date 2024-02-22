@@ -3,17 +3,19 @@ package com.example.final_project_4.controller;
 
 import com.example.final_project_4.dto.*;
 import com.example.final_project_4.entity.BaseUser;
-import com.example.final_project_4.entity.Customer;
-import com.example.final_project_4.mapper.CustomerMapper;
+import com.example.final_project_4.entity.ConfirmationToken;
+
+
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 
 @RestController
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public class UserController {
     private final UserService userService;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
+
 
     @PreAuthorize("hasAnyRole('EXPERT','CUSTOMER','ADMIN')")
     @PutMapping("changePassword")
@@ -43,5 +47,37 @@ public class UserController {
     }
 
 
+    @GetMapping("/register")
+    public ModelAndView displayRegistration(ModelAndView modelAndView, BaseUser user)
+    {
+        modelAndView.addObject("user", user);
+        modelAndView.setViewName("register");
+        return modelAndView;
+    }
+
+
+
+
+
+
+    @RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
+    public ModelAndView confirmUserAccount(ModelAndView modelAndView, @RequestParam("token")String confirmationToken)
+    {
+        ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
+
+        if(token != null) {
+            BaseUser user = userService.findByEmail(token.getUser().getEmail());
+            user.setActive(true);
+            userService.save(user);
+            modelAndView.setViewName("accountVerified");
+        }
+        else
+        {
+            modelAndView.addObject("message","The link is invalid or broken!");
+            modelAndView.setViewName("error");
+        }
+
+        return modelAndView;
+    }
 
 }

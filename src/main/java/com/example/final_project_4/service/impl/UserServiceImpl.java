@@ -5,7 +5,7 @@ package com.example.final_project_4.service.impl;
 
 import com.example.final_project_4.dto.CreditBalanceProjection;
 import com.example.final_project_4.entity.BaseUser;
-import com.example.final_project_4.entity.Credit;
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.repository.UserRepository;
 import com.example.final_project_4.service.CreditService;
 import com.example.final_project_4.service.UserService;
@@ -22,21 +22,18 @@ public class UserServiceImpl extends BaseUserServiceImpl<BaseUser, UserRepositor
         implements UserService {
     protected final CreditService creditService;
 
-    public UserServiceImpl(UserRepository repository,BCryptPasswordEncoder passwordEncoder,  CreditService creditService) {
-        super(repository,passwordEncoder);
+
+    public UserServiceImpl(UserRepository repository, BCryptPasswordEncoder passwordEncoder,ConfirmationTokenRepository confirmationTokenRepository,EmailService emailService, CreditService creditService) {
+        super(repository,passwordEncoder,confirmationTokenRepository,emailService);
         this.creditService = creditService;
+
     }
 
-    @Override
-    public double showCreditBalance(String email) {
-        BaseUser baseUser = findByEmail(email);
-        Credit credit = creditService.findByBaseUser(baseUser);
-        return credit.getBalance();
-    }
 
     @Override
     public CreditBalanceProjection showBalance(String email) {
         BaseUser baseUser = findByEmail(email);
         return creditService.findBalanceByBaseUser(baseUser);
     }
+
 }

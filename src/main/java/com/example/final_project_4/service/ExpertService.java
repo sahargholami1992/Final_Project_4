@@ -10,12 +10,14 @@ import com.example.final_project_4.entity.Offer;
 import com.example.final_project_4.entity.Order;
 import com.example.final_project_4.entity.enumaration.StatusOrder;
 import com.example.final_project_4.service.user.BaseUserService;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
 public interface ExpertService extends BaseUserService<Expert> {
-    Expert registerExpert(Expert expert,String imagePath);
+    Expert registerExpert(Expert expert, MultipartFile imageFile) throws IOException;
 
     void changeExpertStatus(Expert expert);
     Offer sendOffer(OfferDto dto,String email);

@@ -12,12 +12,14 @@ import com.example.final_project_4.entity.enumaration.Permissions;
 import com.example.final_project_4.entity.enumaration.StatusOrder;
 import com.example.final_project_4.exceptions.DuplicateException;
 import com.example.final_project_4.exceptions.NotFoundException;
+import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.repository.ExpertRepository;
 import com.example.final_project_4.service.*;
 import com.example.final_project_4.service.user.BaseUserServiceImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.Collection;
@@ -31,8 +33,8 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     protected final ReviewService reviewService;
     protected final CreditService creditService;
     protected final OrderService orderService;
-    public ExpertServiceImpl(ExpertRepository repository,BCryptPasswordEncoder passwordEncoder, OfferService offerService, ReviewService reviewService, CreditService creditService, OrderService orderService) {
-        super(repository,passwordEncoder);
+    public ExpertServiceImpl(ExpertRepository repository, BCryptPasswordEncoder passwordEncoder, ConfirmationTokenRepository confirmationTokenRepository, EmailService emailService, OfferService offerService, ReviewService reviewService, CreditService creditService, OrderService orderService) {
+        super(repository,passwordEncoder,confirmationTokenRepository,emailService);
         this.offerService=offerService;
         this.reviewService=reviewService;
         this.creditService = creditService;
@@ -40,10 +42,10 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
     }
     @Transactional
     @Override
-    public Expert registerExpert(Expert expert,String imagePath) {
+    public Expert registerExpert(Expert expert, MultipartFile imageFile) throws IOException {
        if (existByEmail(expert.getEmail()))
            throw new DuplicateException("this email existed");
-       expert.setProfileImage(readsImage(imagePath));
+       expert.setProfileImage(imageFile.getBytes());
        expert.setPermissions(Permissions.WAITING);
        expert.setPassword(passwordEncoder.encode(expert.getPassword()));
        Credit credit = new Credit();
@@ -51,28 +53,10 @@ public class ExpertServiceImpl extends BaseUserServiceImpl<Expert, ExpertReposit
        Expert save = repository.save(expert);
        credit.setBaseUser(save);
        creditService.saveCredit(credit);
+       sendEmail(save);
        return save;
     }
-    private static byte[] readsImage(String imageName)  {
-        InputStream inputStream = ExpertServiceImpl.class.getClassLoader().getResourceAsStream(imageName);
-        if (inputStream != null){
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            int bytesRead;
-            byte[] buffer = new byte[1024];
 
-            while (true) {
-                try {
-                    if ((bytesRead = inputStream.read(buffer)) == -1) break;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                byteArrayOutputStream.write(buffer, 0, bytesRead);
-            }
-            return byteArrayOutputStream.toByteArray();
-        }else{
-            return null;
-        }
-    }
     @Transactional
     @Override
     public void changeExpertStatus(Expert expert) {
