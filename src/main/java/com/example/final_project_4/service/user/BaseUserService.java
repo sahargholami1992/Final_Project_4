@@ -30,4 +30,5 @@ public interface BaseUserService<T extends BaseUser>  {
 
     void save(T user);
     void sendEmail(T user);
+    void confirmEmail(String confirmationToken);
 }

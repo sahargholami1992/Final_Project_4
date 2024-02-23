@@ -7,6 +7,8 @@ package com.example.final_project_4.service.user;
 import com.example.final_project_4.dto.UserSearch;
 import com.example.final_project_4.entity.BaseUser;
 import com.example.final_project_4.entity.ConfirmationToken;
+import com.example.final_project_4.exceptions.Confirm;
+import com.example.final_project_4.exceptions.DuplicateException;
 import com.example.final_project_4.exceptions.NoMatchResultException;
 import com.example.final_project_4.exceptions.NotFoundException;
 import com.example.final_project_4.repository.ConfirmationTokenRepository;
@@ -64,6 +66,20 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
     public Optional<T> findByUsernameOptional(String email) {
         return repository.findByEmail(email);
 
+    }
+    @Override
+    public void confirmEmail(String confirmationToken) {
+        if (confirmationTokenRepository.existsByConfirmationToken(confirmationToken))
+            throw new DuplicateException("THIS TOKEN IS ALREADY USED");
+
+        ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
+
+        if (token == null)
+            throw new Confirm("EMAIL NOT CONFIRMED");
+
+        T user = findByEmail(token.getUser().getEmail());
+        user.setActive(true);
+        save(user);
     }
 
     @Override
@@ -127,12 +143,7 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
         repository.save(user);
     }
 
-//    @Override
-//    public double showCreditBalance(String email){
-//        T t = findByEmail(email);
-//        return t.getCredit().getBalance();
-//
-//    }
+
     @Override
     public void sendEmail(T user) {
     ConfirmationToken confirmationToken = new ConfirmationToken(user);
@@ -142,7 +153,7 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
     mailMessage.setTo(user.getEmail());
     mailMessage.setSubject("Complete Registration!");
     mailMessage.setText("To confirm your account, please click here : "
-            +"http://localhost:8080/confirm-account?token="+confirmationToken.getConfirmationToken());
+            +"http://localhost:8184/confirm-account?token="+confirmationToken.getConfirmationToken());
 
     emailService.sendEmail(mailMessage);
 }

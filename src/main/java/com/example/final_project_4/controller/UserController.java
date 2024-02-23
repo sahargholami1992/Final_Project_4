@@ -10,6 +10,7 @@ import com.example.final_project_4.repository.ConfirmationTokenRepository;
 import com.example.final_project_4.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,37 +48,10 @@ public class UserController {
     }
 
 
-    @GetMapping("/register")
-    public ModelAndView displayRegistration(ModelAndView modelAndView, BaseUser user)
-    {
-        modelAndView.addObject("user", user);
-        modelAndView.setViewName("register");
-        return modelAndView;
-    }
-
-
-
-
-
-
-    @RequestMapping(value="/confirm-account", method= {RequestMethod.GET, RequestMethod.POST})
-    public ModelAndView confirmUserAccount(ModelAndView modelAndView, @RequestParam("token")String confirmationToken)
-    {
-        ConfirmationToken token = confirmationTokenRepository.findByConfirmationToken(confirmationToken);
-
-        if(token != null) {
-            BaseUser user = userService.findByEmail(token.getUser().getEmail());
-            user.setActive(true);
-            userService.save(user);
-            modelAndView.setViewName("accountVerified");
-        }
-        else
-        {
-            modelAndView.addObject("message","The link is invalid or broken!");
-            modelAndView.setViewName("error");
-        }
-
-        return modelAndView;
+    @RequestMapping(value = "/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
+    public ResponseEntity<String> confirmUserAccount(@RequestParam("token") String confirmationToken) {
+        userService.confirmEmail(confirmationToken);
+        return new ResponseEntity<>("EMAIL CONFIRMED SUCCESSFULLY", HttpStatus.OK);
     }
 
 }

@@ -45,6 +45,10 @@ public class MyControllerAdvice {
     public ResponseEntity<String> handleException(PaymentProcessingException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
     }
+    @ExceptionHandler(Confirm.class)
+    public ResponseEntity<String> handleException(Confirm ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
     @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "invalid format")
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public void handleException(HttpMessageNotReadableException ex) {
