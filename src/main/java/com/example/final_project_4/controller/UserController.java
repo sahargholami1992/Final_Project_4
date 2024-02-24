@@ -2,11 +2,9 @@ package com.example.final_project_4.controller;
 
 
 import com.example.final_project_4.dto.*;
-import com.example.final_project_4.entity.BaseUser;
-import com.example.final_project_4.entity.ConfirmationToken;
 
 
-import com.example.final_project_4.repository.ConfirmationTokenRepository;
+
 import com.example.final_project_4.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+
 
 
 @RestController
@@ -25,7 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Validated
 public class UserController {
     private final UserService userService;
-    private final ConfirmationTokenRepository confirmationTokenRepository;
+
 
 
     @PreAuthorize("hasAnyRole('EXPERT','CUSTOMER','ADMIN')")
@@ -51,7 +49,7 @@ public class UserController {
     @RequestMapping(value = "/confirm-account", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<String> confirmUserAccount(@RequestParam("token") String confirmationToken) {
         userService.confirmEmail(confirmationToken);
-        return new ResponseEntity<>("EMAIL CONFIRMED SUCCESSFULLY", HttpStatus.OK);
+        return new ResponseEntity<>("email confirmed", HttpStatus.OK);
     }
 
 }

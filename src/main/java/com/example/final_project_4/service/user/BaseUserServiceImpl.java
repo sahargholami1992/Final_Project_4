@@ -123,8 +123,6 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
                     predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("score"), searchCriteria.getMaxRating()));
                     query.orderBy(cb.desc(root.get("score")));
                 }
-
-
                 return predicate;
             };
         }
@@ -149,7 +147,7 @@ public abstract class BaseUserServiceImpl<T extends BaseUser,R extends BaseUserR
     ConfirmationToken confirmationToken = new ConfirmationToken(user);
     confirmationTokenRepository.save(confirmationToken);
     SimpleMailMessage mailMessage = new SimpleMailMessage();
-    mailMessage.setFrom("siavosh.arminrad@gmail.com");
+    mailMessage.setFrom("sahargholami03@gmail.com");
     mailMessage.setTo(user.getEmail());
     mailMessage.setSubject("Complete Registration!");
     mailMessage.setText("To confirm your account, please click here : "

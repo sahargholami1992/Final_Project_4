@@ -77,9 +77,6 @@ public class CustomerServiceImpl extends BaseUserServiceImpl<Customer, CustomerR
     @Transactional
     @Override
     public Order addOrder(OrderDto dto,String email) {
-//        if (!existByEmail(email)
-//                && !subServiceService.existByName(dto.getSubServiceName()))
-//            throw new NotFoundException("customer or subService is null");
         Customer customer = findByEmail(email);
         SubService subService = subServiceService.findBySubServiceName(dto.getSubServiceName());
         return orderService.addOrder(dto,customer,subService);

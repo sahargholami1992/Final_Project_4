@@ -7,8 +7,6 @@ import java.io.IOException;
 
 public class ImageValidator implements ConstraintValidator<ValidImage, byte[]> {
 
-
-
     @Override
     public boolean isValid(byte[] imageData, ConstraintValidatorContext context) {
         if (imageData == null || imageData.length == 0) {

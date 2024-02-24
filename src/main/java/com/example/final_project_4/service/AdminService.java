@@ -9,7 +9,6 @@ import com.example.final_project_4.dto.OrderHistoryDto;
 import com.example.final_project_4.dto.ReportForAdmin;
 import com.example.final_project_4.dto.UserSearch;
 import com.example.final_project_4.entity.*;
-import com.example.final_project_4.entity.enumaration.Roll;
 import com.example.final_project_4.service.user.BaseUserService;
 
 import java.util.Collection;

@@ -3,12 +3,16 @@ package com.example.final_project_4.dto;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentRequest implements Serializable {
     @Pattern(regexp ="^[0-9]{16}$",message = "invalid card number")
     private String cardNumber;

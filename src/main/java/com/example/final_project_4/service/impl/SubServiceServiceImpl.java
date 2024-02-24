@@ -2,7 +2,7 @@ package com.example.final_project_4.service.impl;
 
 
 
-import com.example.final_project_4.dto.UserSearch;
+
 import com.example.final_project_4.entity.*;
 import com.example.final_project_4.entity.enumaration.Roll;
 import com.example.final_project_4.exceptions.NoMatchResultException;
@@ -13,15 +13,12 @@ import com.example.final_project_4.service.SubServiceService;
 import com.example.final_project_4.service.UserService;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
